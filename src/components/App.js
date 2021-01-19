@@ -1,59 +1,37 @@
-import React from 'react';
+import React,{useState, useEffect} from 'react';
 import SearchBar from './SearchBar';
-import youtube from '../apis/youtube';
 import VideoList from './VideoList';
 import VideoDetail from './VideoDetail';
+import useVideos from "../hooks/useVideo";
 
-const KEY = 'AIzaSyCN6e98GjAfa_d4E4mISSn8uCP6g5b1DvE';
+const App = () => {
+    const [selectedVideo, setSelectedVideo] = useState(null);
 
-class App extends React.Component {
-  state = { videos: [], selectedVideo: null };
+    /** @desc: useVideos Custom Hook */
+    const [videos, search] = useVideos('buildings')
 
-  componentDidMount() {
-    this.onTermSubmit('buildings');
-  }
+    useEffect(() => {
+        setSelectedVideo(videos[0]);
+    }, [videos])
 
-  onTermSubmit = async (term) => {
-    const response = await youtube.get('/search', {
-      params: {
-        q: term,
-        part: 'snippet',
-        maxResults: 5,
-        type: 'video',
-        key: KEY,
-      },
-    });
-
-    this.setState({
-      videos: response.data.items,
-      selectedVideo: response.data.items[0],
-    });
-  };
-
-  onVideoSelect = (video) => {
-    this.setState({ selectedVideo: video });
-  };
-
-  render() {
-    return (
+  return (
       <div className="ui container">
-        <SearchBar onFormSubmit={this.onTermSubmit} />
+        <SearchBar onFormSubmit={search} />
         <div className="ui grid">
           <div className="ui row">
             <div className="eleven wide column">
-              <VideoDetail video={this.state.selectedVideo} />
+              <VideoDetail video={selectedVideo} />
             </div>
             <div className="five wide column">
               <VideoList
-                onVideoSelect={this.onVideoSelect}
-                videos={this.state.videos}
+                  onVideoSelect={setSelectedVideo}
+                  videos={videos}
               />
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-}
+  );
+};
 
 export default App;
